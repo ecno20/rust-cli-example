@@ -1,9 +1,10 @@
-use std::process::Command;
-use clap::{Arg, Command}; // <-- Agrega esta línea
+use std::process::Command as ProcessCommand;
+use clap::{Arg, Command};
+use serde_json;
 
 fn run_command(command: &str) -> String {
     let args: Vec<&str> = command.split(" ").collect();
-    let output = Command::new(args[0])
+    let output = ProcessCommand::new(args[0])
         .args(&args[1..])
         .output()
         .expect("Failed to execute command");
@@ -32,19 +33,19 @@ fn run_lsblk(device: &str) -> serde_json::Value {
 }
 
 fn main() {
-    let matches = clap::App::new("lsblk")
+    let matches = Command::new("lsblk")
         .version("0.0.1")
         .author("Alfredo Deza")
         .about("lsblk in Rust")
         .arg(
-            clap::Arg::with_name("device")
+            Arg::new("device")
                 .help("Device to query")
                 .required(true)
                 .index(1)
         )
         .get_matches();
 
-    let device = matches.value_of("device").unwrap();
+    let device = matches.get_one::<String>("device").unwrap();
     let output = serde_json::to_string(&run_lsblk(&device)).unwrap();
     println!("{}", output);
 }
